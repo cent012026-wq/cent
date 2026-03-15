@@ -8,7 +8,6 @@ import { CentLogo } from "@/components/cent-logo";
 const navItems = [
   { href: "#how-it-works", label: "Cómo funciona" },
   { href: "#vistas", label: "Vistas clave" },
-  { href: "/login", label: "Entrar" },
 ];
 
 export function LandingNav() {
@@ -50,7 +49,7 @@ export function LandingNav() {
               </Link>
             ))}
             <Link href="/login" className="button-primary px-5 py-3 text-sm">
-              Solicitar OTP
+              Entrar
             </Link>
           </nav>
 
@@ -84,7 +83,7 @@ export function LandingNav() {
                 </Link>
               ))}
               <Link href="/login" className="button-primary w-full text-sm" onClick={() => setOpen(false)}>
-                Solicitar OTP
+                Entrar
               </Link>
             </nav>
           </div>
