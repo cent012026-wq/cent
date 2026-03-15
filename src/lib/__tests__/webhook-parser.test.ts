@@ -64,4 +64,35 @@ describe("webhook parser", () => {
       transcript: "Vendí 3 camisas a 25 mil",
     });
   });
+
+  it("parses kapso batched payloads", () => {
+    const messages = parseWebhookMessages({
+      type: "whatsapp.message.received",
+      batch: true,
+      data: [
+        {
+          message: {
+            id: "wamid.kapso.batch.1",
+            type: "text",
+            text: {
+              body: "Vendí 2 cafés a 12000",
+            },
+            from: "573007750712",
+            timestamp: "1718224617",
+          },
+          conversation: {
+            phone_number: "573007750712",
+          },
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatchObject({
+      messageId: "wamid.kapso.batch.1",
+      from: "573007750712",
+      type: "text",
+      text: "Vendí 2 cafés a 12000",
+    });
+  });
 });

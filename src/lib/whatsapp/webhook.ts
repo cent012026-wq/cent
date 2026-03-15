@@ -171,9 +171,14 @@ export function parseWebhookMessages(payload: unknown): WebhookMessage[] {
     return parseMetaMessages(objectPayload as MetaWebhookPayload);
   }
 
-  const kapsoCandidate =
-    (objectPayload.data as Record<string, unknown> | undefined) ??
-    objectPayload;
+  if (Array.isArray(objectPayload.data)) {
+    return (objectPayload.data as unknown[])
+      .flatMap((item) =>
+        item && typeof item === "object" ? parseKapsoData(item as Record<string, unknown>) : [],
+      );
+  }
+
+  const kapsoCandidate = (objectPayload.data as Record<string, unknown> | undefined) ?? objectPayload;
 
   return parseKapsoData(kapsoCandidate);
 }
