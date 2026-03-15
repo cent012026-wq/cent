@@ -37,6 +37,8 @@ const envSchema = z.object({
   WHATSAPP_API_VERSION: defaultedString("v24.0"),
   WHATSAPP_PHONE_NUMBER_ID: optionalString(),
   WHATSAPP_ACCESS_TOKEN: optionalString(),
+  WHATSAPP_OTP_TEMPLATE_NAME: defaultedString("cent_login_otp"),
+  WHATSAPP_OTP_TEMPLATE_LANGUAGE: defaultedString("es"),
   KAPSO_API_KEY: optionalString(),
   KAPSO_WEBHOOK_SECRET: optionalString(),
   KAPSO_BASE_URL: defaultedUrl("https://api.kapso.ai"),

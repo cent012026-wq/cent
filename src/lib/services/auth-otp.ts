@@ -12,7 +12,7 @@ import {
   setOtp,
 } from "@/lib/services/data-access";
 import { canAttemptOtp, isOtpExpired } from "@/lib/services/auth-otp-utils";
-import { sendWhatsAppTextMessage } from "@/lib/whatsapp/meta";
+import { sendWhatsAppOtpTemplateMessage } from "@/lib/whatsapp/meta";
 
 interface OtpValidationResult {
   ok: boolean;
@@ -102,7 +102,10 @@ export async function requestOtpForPhone(phone: string): Promise<OtpRequestResul
   });
 
   try {
-    await sendWhatsAppTextMessage(phone, `Tu código de acceso cent es: ${otp}. Expira en 5 minutos.`);
+    await sendWhatsAppOtpTemplateMessage(phone, otp, {
+      negocioId: user.negocio_id,
+      expirationMinutes: 5,
+    });
     publishDomainEvent({ type: "otp.requested", payload: { phone } });
 
     return {

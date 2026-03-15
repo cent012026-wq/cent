@@ -54,6 +54,8 @@ Variables mínimas para levantar el sistema completo:
 - `OPENAI_BASE_URL`
 - `WHATSAPP_PROVIDER=kapso`
 - `WHATSAPP_PHONE_NUMBER_ID`
+- `WHATSAPP_OTP_TEMPLATE_NAME`
+- `WHATSAPP_OTP_TEMPLATE_LANGUAGE`
 - `KAPSO_API_KEY`
 - `KAPSO_WEBHOOK_SECRET`
 - `KAPSO_BASE_URL` (por defecto `https://api.kapso.ai`)
@@ -77,6 +79,7 @@ Variables opcionales:
 Notas importantes:
 
 - Si `WHATSAPP_PROVIDER=kapso`, el backend valida firma con header `x-webhook-signature` y `KAPSO_WEBHOOK_SECRET`.
+- El OTP web ahora sale por template de WhatsApp, no por texto libre. Debes tener aprobado `WHATSAPP_OTP_TEMPLATE_NAME` en el idioma configurado por `WHATSAPP_OTP_TEMPLATE_LANGUAGE`.
 - Para OpenRouter, usa `OPENAI_BASE_URL=https://openrouter.ai/api/v1`.
 - El setup actual de audio usa `STT_BASE_URL=https://api.openai.com/v1` y `STT_MODEL=whisper-1`.
 - Para notas de voz de WhatsApp, deja `STT_AUDIO_FORMAT=ogg`.
@@ -208,7 +211,7 @@ Si no quieres validar firma para pruebas locales inmediatas, deja `KAPSO_WEBHOOK
    - Revisa firma y `KAPSO_WEBHOOK_SECRET`.
 
 3. Login OTP no llega.
-   - Verifica que el usuario dueño exista en `usuarios` y tenga `activo=true`.
+   - Verifica `WHATSAPP_OTP_TEMPLATE_NAME`, `WHATSAPP_OTP_TEMPLATE_LANGUAGE`, `KAPSO_API_KEY` y `WHATSAPP_PHONE_NUMBER_ID`.
 
 4. Error de permisos de datos.
    - Confirma migración aplicada completa y políticas RLS activas.

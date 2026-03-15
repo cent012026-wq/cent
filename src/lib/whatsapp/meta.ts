@@ -163,6 +163,110 @@ export async function sendWhatsAppTextMessage(
   }
 }
 
+export async function sendWhatsAppOtpTemplateMessage(
+  to: string,
+  code: string,
+  options?: { negocioId?: string | null; expirationMinutes?: number },
+): Promise<void> {
+  if (!canSendMessages()) {
+    const errorMessage = "WhatsApp provider credentials missing";
+    logger.info("Skipping WhatsApp OTP template send because provider credentials are missing", {
+      provider: env.WHATSAPP_PROVIDER,
+      to,
+      templateName: env.WHATSAPP_OTP_TEMPLATE_NAME,
+    });
+
+    if (isSupabaseConfigured()) {
+      await logOutboundMessage({
+        negocioId: options?.negocioId ?? null,
+        telefono: to,
+        tipo: "template_authentication",
+        payload: { code, templateName: env.WHATSAPP_OTP_TEMPLATE_NAME },
+        estado: "failed",
+        error: errorMessage,
+      });
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  const payload = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: env.WHATSAPP_OTP_TEMPLATE_NAME,
+      language: { code: env.WHATSAPP_OTP_TEMPLATE_LANGUAGE },
+      components: [
+        {
+          type: "body",
+          parameters: [{ type: "text", text: code }],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: code }],
+        },
+      ],
+    },
+  };
+
+  const response = await fetch(graphApiUrl(`${env.WHATSAPP_PHONE_NUMBER_ID}/messages`), {
+    method: "POST",
+    headers: {
+      ...buildAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+
+    if (isSupabaseConfigured()) {
+      await logOutboundMessage({
+        negocioId: options?.negocioId ?? null,
+        telefono: to,
+        tipo: "template_authentication",
+        payload,
+        estado: "failed",
+        error: text,
+      });
+    }
+
+    throw new Error(`Failed to send WhatsApp OTP template: ${response.status} ${text}`);
+  }
+
+  if (isSupabaseConfigured()) {
+    await logOutboundMessage({
+      negocioId: options?.negocioId ?? null,
+      telefono: to,
+      tipo: "template_authentication",
+      payload: {
+        ...payload,
+        template: {
+          ...payload.template,
+          components: [
+            {
+              type: "body",
+              parameters: [{ type: "text", text: "******" }],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: "******" }],
+            },
+          ],
+        },
+        expirationMinutes: options?.expirationMinutes ?? 5,
+      },
+      estado: "sent",
+    });
+  }
+}
+
 function mediaDownloadHeaders(): Record<string, string> {
   try {
     return buildAuthHeaders();
