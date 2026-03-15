@@ -8,8 +8,8 @@ export default async function NotificacionesPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Notificaciones">
-        <p className="rounded-lg border border-amber-700 bg-amber-900/30 p-4 text-amber-200">
+      <AppShell title="Notificaciones" subtitle="Configura resúmenes, avisos y tiempos de envío por WhatsApp.">
+        <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para administrar notificaciones.
         </p>
       </AppShell>
@@ -19,16 +19,37 @@ export default async function NotificacionesPage() {
   const configs = await listNotificacionConfig(session.negocioId);
 
   return (
-    <AppShell title="Notificaciones">
-      <div className="space-y-3">
-        {configs.map((config) => (
-          <article key={config.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-            <p className="font-semibold text-cyan-300">{config.tipo}</p>
-            <p className="text-sm text-slate-300">Activa: {config.activa ? "Sí" : "No"}</p>
-            <p className="text-sm text-slate-300">Hora: {config.hora_envio ?? "N/A"}</p>
+    <AppShell
+      title="Notificaciones"
+      subtitle="Activa reportes y avisos para que el dueño reciba señales útiles sin saturarse de mensajes innecesarios."
+    >
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {configs.length === 0 ? (
+          <article className="glass-panel rounded-[2.4rem] p-10 md:col-span-2 xl:col-span-3">
+            <h2 className="text-2xl font-bold text-[var(--brand-ink)]">No hay notificaciones configuradas</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+              Cuando actives resúmenes diarios, semanales o avisos de operación, esta vista se convertirá en tu centro de control para el canal saliente.
+            </p>
           </article>
-        ))}
-      </div>
+        ) : (
+          configs.map((config) => (
+            <article key={config.id} className="glass-panel rounded-[2.3rem] p-6">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xl font-bold capitalize text-[var(--brand-ink)]">{config.tipo.replaceAll("_", " ")}</p>
+                <span className={`metric-pill ${config.activa ? "metric-pill-positive" : "metric-pill-neutral"}`}>
+                  {config.activa ? "Activa" : "Pausada"}
+                </span>
+              </div>
+              <div className="mt-6 space-y-3 text-sm text-slate-600">
+                <div className="rounded-[1.4rem] bg-white/55 px-4 py-3">Hora programada: {config.hora_envio ?? "Sin horario"}</div>
+                <div className="rounded-[1.4rem] bg-white/55 px-4 py-3">
+                  Última ejecución: {config.ultima_ejecucion ? new Date(config.ultima_ejecucion).toLocaleString("es-CO") : "Aún no ejecutada"}
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </section>
     </AppShell>
   );
 }

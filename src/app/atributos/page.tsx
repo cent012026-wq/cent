@@ -8,8 +8,8 @@ export default async function AtributosPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Atributos">
-        <p className="rounded-lg border border-amber-700 bg-amber-900/30 p-4 text-amber-200">
+      <AppShell title="Atributos" subtitle="Define qué datos debe capturar cent en cada venta o gasto.">
+        <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para administrar atributos dinámicos.
         </p>
       </AppShell>
@@ -19,17 +19,29 @@ export default async function AtributosPage() {
   const attrs = await listAtributos(session.negocioId);
 
   return (
-    <AppShell title="Atributos Dinámicos">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <AppShell
+      title="Atributos dinámicos"
+      subtitle="Cada comercio puede definir su propia estructura: talla, color, método de pago, sede, categoría o cualquier dato que necesite controlar."
+    >
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {attrs.map((attr) => (
-          <article key={attr.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-            <p className="text-lg font-medium text-cyan-300">{attr.nombre_campo}</p>
-            <p className="text-sm text-slate-300">Tipo: {attr.tipo_dato}</p>
-            <p className="text-sm text-slate-300">Obligatorio: {attr.es_obligatorio ? "Sí" : "No"}</p>
-            <p className="text-sm text-slate-400">{attr.es_core ? "Core" : "Personalizable"}</p>
+          <article key={attr.id} className="glass-panel rounded-[2.3rem] p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-2xl font-bold text-[var(--brand-ink)]">{attr.nombre_campo}</p>
+                <p className="mt-2 text-sm text-slate-500">Tipo: {attr.tipo_dato}</p>
+              </div>
+              <span className={`metric-pill ${attr.es_core ? "metric-pill-neutral" : "metric-pill-positive"}`}>
+                {attr.es_core ? "Core" : "Personalizable"}
+              </span>
+            </div>
+            <div className="mt-6 space-y-3 text-sm text-slate-600">
+              <div className="rounded-[1.4rem] bg-white/55 px-4 py-3">Obligatorio: {attr.es_obligatorio ? "Sí" : "No"}</div>
+              <div className="rounded-[1.4rem] bg-white/55 px-4 py-3">Orden visual: {attr.orden ?? "Sin orden"}</div>
+            </div>
           </article>
         ))}
-      </div>
+      </section>
     </AppShell>
   );
 }

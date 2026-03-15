@@ -8,8 +8,8 @@ export default async function ConfigBotPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Config Bot">
-        <p className="rounded-lg border border-amber-700 bg-amber-900/30 p-4 text-amber-200">
+      <AppShell title="Config Bot" subtitle="Ajusta el tono, nombre y contexto con el que opera el asistente del negocio.">
+        <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para personalizar el bot.
         </p>
       </AppShell>
@@ -19,14 +19,56 @@ export default async function ConfigBotPage() {
   const negocio = await findNegocioById(session.negocioId);
 
   return (
-    <AppShell title="Configuración del Bot">
-      <article className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-        <p className="text-sm text-slate-400">Negocio</p>
-        <p className="mb-3 text-xl font-semibold text-cyan-300">{negocio?.nombre ?? "Sin negocio"}</p>
-        <p className="text-sm text-slate-300">Nombre bot: {negocio?.config_agente?.nombre ?? "VendBot"}</p>
-        <p className="text-sm text-slate-300">Tono: {negocio?.config_agente?.tono ?? "amable"}</p>
-        <p className="text-sm text-slate-300">Jerga: {negocio?.config_agente?.jerga ?? "neutro"}</p>
-      </article>
+    <AppShell
+      title="Configuración del bot"
+      subtitle="Una buena configuración hace que el agente suene como el negocio y capture la información con el nivel de detalle que realmente importa."
+    >
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <article className="glass-panel-strong rounded-[2.6rem] p-6 md:p-8">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div>
+              <label className="mb-2 ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Negocio</label>
+              <div className="rounded-[1.35rem] border border-white/60 bg-white/65 px-5 py-4 text-base font-semibold text-[var(--brand-ink)]">
+                {negocio?.nombre ?? "Sin negocio"}
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Plan</label>
+              <div className="rounded-[1.35rem] border border-white/60 bg-white/65 px-5 py-4 text-base font-semibold capitalize text-[var(--brand-ink)]">
+                {negocio?.plan ?? "trial"}
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Nombre del agente</label>
+              <div className="rounded-[1.35rem] border border-white/60 bg-white/65 px-5 py-4 text-base text-slate-700">
+                {negocio?.config_agente?.nombre ?? "VendBot"}
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Tono</label>
+              <div className="rounded-[1.35rem] border border-white/60 bg-white/65 px-5 py-4 text-base text-slate-700">
+                {negocio?.config_agente?.tono ?? "amable"}
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-2 ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Jerga</label>
+              <div className="rounded-[1.35rem] border border-white/60 bg-white/65 px-5 py-4 text-base text-slate-700">
+                {negocio?.config_agente?.jerga ?? "neutro"}
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article className="glass-panel rounded-[2.6rem] p-6 md:p-8">
+          <div className="eyebrow">Guía de operación</div>
+          <h2 className="mt-5 text-3xl font-bold text-[var(--brand-ink)]">Qué debe sentirse en este panel</h2>
+          <div className="mt-6 space-y-4 text-sm leading-7 text-slate-600">
+            <div className="rounded-[1.5rem] bg-white/55 p-4">El dueño debe entender cómo va a responder el agente sin leer prompts ni configuraciones técnicas.</div>
+            <div className="rounded-[1.5rem] bg-white/55 p-4">La información del negocio debe estar clara: tono, lenguaje y nombre del asistente.</div>
+            <div className="rounded-[1.5rem] bg-white/55 p-4">La vista debe sentirse como configuración útil, no como panel de ingeniería.</div>
+          </div>
+        </article>
+      </section>
     </AppShell>
   );
 }
