@@ -16,7 +16,7 @@ describe("fallback parser", () => {
     const result = extractVentaHeuristic("Vendí 3 camisas a 25 mil");
     expect(result.intent).toBe("registrar_venta");
     expect(result.cantidad).toBe(3);
-    expect(result.monto).toBe(25000);
+    expect(result.monto).toBe(75000);
     expect(result.datos_faltantes.length).toBeLessThan(2);
   });
 
@@ -32,5 +32,12 @@ describe("fallback parser", () => {
     expect(result.cantidad).toBe(300);
     expect(result.monto).toBe(5000000);
     expect(result.concepto).toContain("camisetas");
+  });
+
+  it("asks for missing amount when only quantity is present", () => {
+    const result = extractVentaHeuristic("Vendi 3 camisas");
+    expect(result.cantidad).toBe(3);
+    expect(result.monto).toBeUndefined();
+    expect(result.datos_faltantes).toContain("monto");
   });
 });

@@ -4,8 +4,14 @@ import { extractCantidad, parseMonto } from "@/lib/utils/parsing";
 function cleanConcept(text: string): string | undefined {
   const cleaned = text
     .toLowerCase()
-    .replace(/\b(se\s+)?vend(?:i|í|io|ió|ieron|imos|iste|iendo)?\b/g, "")
-    .replace(/\b(gast(?:e|é|o|ó|amos|aste)|pagu(?:e|é)|pago|cost[oó])\b/g, "")
+    .replace(/(^|\s)se\s+vendieron(?=\s|$)/g, " ")
+    .replace(/(^|\s)vendieron(?=\s|$)/g, " ")
+    .replace(/(^|\s)vend[ií](?=\s|$)/g, " ")
+    .replace(/(^|\s)gast[eé](?=\s|$)/g, " ")
+    .replace(/(^|\s)gasto(?=\s|$)/g, " ")
+    .replace(/(^|\s)pagu[eé](?=\s|$)/g, " ")
+    .replace(/(^|\s)pago(?=\s|$)/g, " ")
+    .replace(/(^|\s)cost[oó](?=\s|$)/g, " ")
     .replace(/\bx\s+valor\s+de\b/g, "")
     .replace(/\bpor\s+\d+[\d\.,]*\s*(k|mil|millon(?:es)?)?/g, "")
     .replace(/\ba\s+\d+[\d\.,]*\s*(k|mil|millon(?:es)?)?/g, "")
@@ -16,6 +22,26 @@ function cleanConcept(text: string): string | undefined {
     .trim();
 
   return cleaned.length > 2 ? cleaned : undefined;
+}
+
+function extractVentaMonto(text: string, cantidad?: number): number | undefined {
+  const lower = text.toLowerCase();
+  const perUnitMatch = lower.match(/\ba\s+(\d+[\d\.,]*)\s*(millon(?:es)?|k|mil)?\b/);
+  if (perUnitMatch && cantidad) {
+    const unitAmount = parseMonto(`${perUnitMatch[1]} ${perUnitMatch[2] ?? ""}`.trim());
+    if (unitAmount) {
+      return unitAmount * cantidad;
+    }
+  }
+
+  const amount = parseMonto(text);
+  const hasAmountMarker = /\$|\b(por|a|x|valor|pesos?|mil|k|millon(?:es)?)\b/.test(lower);
+
+  if (!hasAmountMarker && cantidad && amount === cantidad) {
+    return undefined;
+  }
+
+  return amount;
 }
 
 export function classifyIntentHeuristic(input: string): { intent: IntentType; confianza: number } {
@@ -49,8 +75,8 @@ export function classifyIntentHeuristic(input: string): { intent: IntentType; co
 }
 
 export function extractVentaHeuristic(input: string): RegistrarVentaResult {
-  const monto = parseMonto(input);
   const cantidad = extractCantidad(input);
+  const monto = extractVentaMonto(input, cantidad);
   const concepto = cleanConcept(input);
 
   const missing = [

@@ -1,4 +1,4 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -37,13 +37,13 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const payload = JSON.parse(rawBody) as unknown;
 
-  after(() => {
-    processIncomingWhatsAppPayload(payload).catch((error) => {
-      logger.error("Async processing of webhook failed", {
-        error: error instanceof Error ? error.message : "unknown_error",
-      });
+  try {
+    await processIncomingWhatsAppPayload(payload);
+  } catch (error) {
+    logger.error("Webhook processing failed", {
+      error: error instanceof Error ? error.message : "unknown_error",
     });
-  });
+  }
 
   return NextResponse.json({ received: true });
 }

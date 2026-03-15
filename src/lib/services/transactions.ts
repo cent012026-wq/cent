@@ -162,7 +162,7 @@ export async function processTransactionIntent(input: {
 
   await input.reply(
     input.result.intent === "registrar_venta"
-      ? `Registrado: ${cantidad} x ${concepto} = $${(monto * cantidad).toLocaleString("es-CO")}.`
+      ? `Venta registrada: ${cantidad} ${concepto} por $${monto.toLocaleString("es-CO")}.`
       : `Costo registrado: ${concepto} por $${monto.toLocaleString("es-CO")}.`,
   );
 
