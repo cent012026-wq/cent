@@ -131,4 +131,22 @@ describe("webhook parser", () => {
       transcript: "Vendí tres jeans por ciento cincuenta.",
     });
   });
+
+  it("ignores outbound kapso echoes", () => {
+    const messages = parseWebhookMessages({
+      data: [
+        {
+          id: "wamid.outbound.1",
+          from: "573005282031",
+          text: "Hola. Estoy listo para registrar ventas y gastos de tu negocio.",
+          message_type: "text",
+          kapso: {
+            direction: "outbound",
+          },
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(0);
+  });
 });

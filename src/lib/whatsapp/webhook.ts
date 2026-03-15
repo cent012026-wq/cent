@@ -127,6 +127,14 @@ function readTranscriptCandidate(data: Record<string, unknown>, message: Record<
 }
 
 function parseKapsoData(data: Record<string, unknown>): WebhookMessage[] {
+  const direction =
+    (data.direction as string | undefined) ??
+    ((data.kapso as { direction?: string } | undefined)?.direction ?? undefined);
+
+  if (direction === "outbound") {
+    return [];
+  }
+
   const sharedFrom =
     (data.from as string | undefined) ??
     ((data.contact as { wa_id?: string } | undefined)?.wa_id ?? undefined) ??
