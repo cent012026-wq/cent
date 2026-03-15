@@ -9,12 +9,13 @@ export function normalizePhone(phone: string): string {
 
 export function parseMonto(raw: string): number | undefined {
   const lower = raw.toLowerCase();
-  const matches = [...lower.matchAll(/(\d+[\d\.,]*)\s*(k|mil)?/g)];
+  const matches = [...lower.matchAll(/(\d+[\d\.,]*)\s*(millon(?:es)?|k|mil)?/g)];
   if (matches.length === 0) {
     return undefined;
   }
 
   const preferred =
+    matches.find((item) => item[2] === "millon" || item[2] === "millones") ??
     matches.find((item) => item[2] === "k" || item[2] === "mil") ??
     matches[matches.length - 1];
 
@@ -25,6 +26,10 @@ export function parseMonto(raw: string): number | undefined {
 
   if (preferred[2] === "k" || preferred[2] === "mil") {
     return Math.round(base * 1000);
+  }
+
+  if (preferred[2] === "millon" || preferred[2] === "millones") {
+    return Math.round(base * 1000000);
   }
 
   return Math.round(base);

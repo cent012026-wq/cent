@@ -80,6 +80,8 @@ export class OpenAIProvider implements AIProvider {
       apiKey,
       baseURL: env.OPENAI_BASE_URL,
       defaultHeaders: buildHeaders(env.OPENAI_BASE_URL),
+      timeout: 2500,
+      maxRetries: 0,
     });
 
     this.transcriptionApiKey = env.STT_API_KEY ?? env.OPENAI_API_KEY ?? null;
@@ -90,6 +92,8 @@ export class OpenAIProvider implements AIProvider {
             apiKey: this.transcriptionApiKey,
             baseURL: this.transcriptionBaseUrl,
             defaultHeaders: buildHeaders(this.transcriptionBaseUrl),
+            timeout: 20000,
+            maxRetries: 0,
           })
         : null;
   }

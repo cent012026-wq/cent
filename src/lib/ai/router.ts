@@ -17,7 +17,16 @@ function buildExtractionPrompt(intent: "registrar_venta" | "registrar_costo", in
   return `Extrae los campos del mensaje para intent=${intent}. Devuelve JSON con campos esperados. Mensaje: ${input}`;
 }
 
+function shouldUseHeuristicIntent(input: string): boolean {
+  const heuristic = classifyIntentHeuristic(input);
+  return heuristic.confianza >= 0.75;
+}
+
 export async function classifyIntent(input: string): Promise<{ intent: IntentType; confianza: number }> {
+  if (shouldUseHeuristicIntent(input)) {
+    return classifyIntentHeuristic(input);
+  }
+
   if (!env.OPENAI_API_KEY) {
     return classifyIntentHeuristic(input);
   }
@@ -40,8 +49,13 @@ export async function classifyIntent(input: string): Promise<{ intent: IntentTyp
 }
 
 export async function extractVenta(input: string): Promise<RegistrarVentaResult> {
+  const heuristic = extractVentaHeuristic(input);
+  if (heuristic.concepto || heuristic.monto || heuristic.cantidad) {
+    return heuristic;
+  }
+
   if (!env.OPENAI_API_KEY) {
-    return extractVentaHeuristic(input);
+    return heuristic;
   }
 
   try {
@@ -57,13 +71,18 @@ export async function extractVenta(input: string): Promise<RegistrarVentaResult>
     logger.warn("Falling back to heuristic venta extractor", {
       error: error instanceof Error ? error.message : "unknown_error",
     });
-    return extractVentaHeuristic(input);
+    return heuristic;
   }
 }
 
 export async function extractCosto(input: string): Promise<RegistrarCostoResult> {
+  const heuristic = extractCostoHeuristic(input);
+  if (heuristic.concepto || heuristic.monto) {
+    return heuristic;
+  }
+
   if (!env.OPENAI_API_KEY) {
-    return extractCostoHeuristic(input);
+    return heuristic;
   }
 
   try {
@@ -79,6 +98,6 @@ export async function extractCosto(input: string): Promise<RegistrarCostoResult>
     logger.warn("Falling back to heuristic costo extractor", {
       error: error instanceof Error ? error.message : "unknown_error",
     });
-    return extractCostoHeuristic(input);
+    return heuristic;
   }
 }

@@ -4,10 +4,13 @@ import { extractCantidad, parseMonto } from "@/lib/utils/parsing";
 function cleanConcept(text: string): string | undefined {
   const cleaned = text
     .toLowerCase()
-    .replace(/vend[ií]\s*/g, "")
-    .replace(/g(ast|asto|ast[ée])\s*/g, "")
-    .replace(/por\s+\d+[\d\.,]*\s*(k|mil)?/g, "")
-    .replace(/a\s+\d+[\d\.,]*\s*(k|mil)?/g, "")
+    .replace(/\b(se\s+)?vend(?:i|í|io|ió|ieron|imos|iste|iendo)?\b/g, "")
+    .replace(/\b(gast(?:e|é|o|ó|amos|aste)|pagu(?:e|é)|pago|cost[oó])\b/g, "")
+    .replace(/\bx\s+valor\s+de\b/g, "")
+    .replace(/\bpor\s+\d+[\d\.,]*\s*(k|mil|millon(?:es)?)?/g, "")
+    .replace(/\ba\s+\d+[\d\.,]*\s*(k|mil|millon(?:es)?)?/g, "")
+    .replace(/\b(valor|pesos?)\b/g, "")
+    .replace(/\b(k|mil|millon(?:es)?)\b/g, "")
     .replace(/\d+/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -39,7 +42,7 @@ export function classifyIntentHeuristic(input: string): { intent: IntentType; co
   }
 
   if (/vend|venta|factur/.test(text)) {
-    return { intent: "registrar_venta", confianza: 0.85 };
+    return { intent: "registrar_venta", confianza: 0.88 };
   }
 
   return { intent: "ayuda", confianza: 0.45 };

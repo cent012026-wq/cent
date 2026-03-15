@@ -25,4 +25,12 @@ describe("fallback parser", () => {
     expect(result.intent).toBe("registrar_costo");
     expect(result.monto).toBe(80000);
   });
+
+  it("extracts venta fields with millones", () => {
+    const result = extractVentaHeuristic("Se vendieron 300 camisetas x valor de 5 millones");
+    expect(result.intent).toBe("registrar_venta");
+    expect(result.cantidad).toBe(300);
+    expect(result.monto).toBe(5000000);
+    expect(result.concepto).toContain("camisetas");
+  });
 });
