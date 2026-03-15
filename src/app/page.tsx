@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { CentLogo } from "@/components/cent-logo";
+import { LandingNav } from "@/components/landing-nav";
+
 const keyViews = [
   {
     title: "Dashboard vivo",
@@ -18,6 +21,7 @@ const keyViews = [
 export default function Home() {
   return (
     <main className="watercolor-shell overflow-hidden px-4 pb-20 pt-24 text-slate-800 md:px-6 lg:px-8">
+      <LandingNav />
       <section className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <div className="eyebrow mb-6">WhatsApp operativo + Web admin</div>
@@ -90,7 +94,6 @@ export default function Home() {
                   <div className="flex h-36 items-end gap-3">
                     {[36, 58, 44, 80, 66, 88].map((height, index) => (
                       <div
-                        // eslint-disable-next-line react/no-array-index-key
                         key={index}
                         className="flex-1 rounded-t-2xl bg-[linear-gradient(180deg,#88c43e,#f2e85e)]"
                         style={{ height: `${height}%` }}
@@ -244,6 +247,24 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <footer className="mx-auto mt-10 flex max-w-7xl flex-col gap-4 border-t border-white/30 px-1 py-8 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <CentLogo compact />
+          <span className="font-semibold text-slate-700">Seguro. Rápido. Sin contraseñas.</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-5">
+          <Link href="/" className="transition-colors hover:text-slate-900">
+            Términos
+          </Link>
+          <Link href="/" className="transition-colors hover:text-slate-900">
+            Privacidad
+          </Link>
+          <Link href="/" className="transition-colors hover:text-slate-900">
+            Ayuda
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }

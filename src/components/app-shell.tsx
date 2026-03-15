@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { CentLogo } from "@/components/cent-logo";
+
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/transacciones", label: "Transacciones" },
@@ -29,13 +31,13 @@ export function AppShell({
     <div className="watercolor-shell min-h-screen text-slate-800">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-4 px-4 py-4 md:px-6 lg:px-8">
         <aside className="glass-panel-strong hidden w-72 shrink-0 rounded-[2rem] p-6 lg:flex lg:flex-col">
-          <Link href="/dashboard" className="mb-8 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#88c43e,#f2e85e)] text-xl font-black text-brand-ink">
-              c
-            </div>
-            <div>
-              <p className="text-2xl font-bold tracking-tight text-[var(--brand-ink)]">cent</p>
-              <p className="text-sm text-slate-500">Control por WhatsApp</p>
+          <Link href="/dashboard" className="mb-8">
+            <div className="flex items-center gap-3">
+              <CentLogo compact />
+              <div>
+                <p className="text-2xl font-bold tracking-tight text-[var(--brand-ink)]">cent</p>
+                <p className="text-sm text-slate-500">Control por WhatsApp</p>
+              </div>
             </div>
           </Link>
 

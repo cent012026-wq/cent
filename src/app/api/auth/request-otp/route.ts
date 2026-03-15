@@ -16,7 +16,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  await requestOtpForPhone(normalizePhone(parsed.data.telefono));
+  const result = await requestOtpForPhone(normalizePhone(parsed.data.telefono));
+  if (!result.ok) {
+    const status =
+      result.reason === "inactive"
+        ? 403
+        : result.reason === "role_not_allowed"
+          ? 409
+          : 502;
+    return NextResponse.json(result, { status });
+  }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json(result);
 }

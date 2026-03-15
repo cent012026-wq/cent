@@ -98,6 +98,7 @@ export async function sendWhatsAppTextMessage(
   options?: { negocioId?: string | null; tipo?: string },
 ): Promise<void> {
   if (!canSendMessages()) {
+    const errorMessage = "WhatsApp provider credentials missing";
     logger.info("Skipping WhatsApp send because provider credentials are missing", {
       provider: env.WHATSAPP_PROVIDER,
       to,
@@ -111,11 +112,11 @@ export async function sendWhatsAppTextMessage(
         tipo: options?.tipo ?? "text",
         payload: { body },
         estado: "failed",
-        error: "WhatsApp provider credentials missing",
+        error: errorMessage,
       });
     }
 
-    return;
+    throw new Error(errorMessage);
   }
 
   const payload = {

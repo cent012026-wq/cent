@@ -143,6 +143,16 @@ export async function createNegocioWithOwner(input: {
   };
 }
 
+export async function createSignupOwner(phone: string): Promise<{ negocio: Negocio; owner: Usuario }> {
+  return createNegocioWithOwner({
+    telefono: phone,
+    nombreNegocio: "Mi negocio",
+    nicho: "comercio",
+    contextoIA: "Alta inicial desde login web",
+    atributos: [],
+  });
+}
+
 export async function findNegocioById(negocioId: string): Promise<Negocio | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
