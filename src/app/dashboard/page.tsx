@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Dashboard" subtitle="Conecta Supabase para ver métricas y actividad real del negocio.">
+      <AppShell title="Dashboard" subtitle="Conecta Supabase para ver tus métricas." telefono={session.telefono}>
         <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura las variables de Supabase para visualizar métricas reales.
         </p>
@@ -30,8 +30,9 @@ export default async function DashboardPage() {
 
   return (
     <AppShell
-      title="Resumen ejecutivo"
-      subtitle="Una lectura rápida de ventas, costos y margen para que el dueño detecte si el día va bien o si necesita intervenir de inmediato."
+      title="Dashboard"
+      subtitle="Ventas, costos y margen del periodo actual."
+      telefono={session.telefono}
     >
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {[
@@ -79,10 +80,8 @@ export default async function DashboardPage() {
         <article className="glass-panel-strong rounded-[2.6rem] p-6 md:p-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-2xl font-bold text-[var(--brand-ink)]">Tendencia visual del negocio</p>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                Esta vista está pensada para que el dueño entienda el ritmo del negocio sin abrir reportes pesados ni perseguir chats.
-              </p>
+              <p className="text-2xl font-bold text-[var(--brand-ink)]">Tendencia de ventas</p>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">Comportamiento reciente de las ventas registradas.</p>
             </div>
             <div className="flex gap-2">
               <span className="metric-pill metric-pill-positive">Mensual</span>
@@ -119,8 +118,8 @@ export default async function DashboardPage() {
 
           <article className="glass-panel rounded-[2.4rem] p-6">
             <div className="flex items-center justify-between">
-              <p className="text-lg font-bold text-[var(--brand-ink)]">Señales del día</p>
-              <span className="metric-pill metric-pill-neutral">owner view</span>
+              <p className="text-lg font-bold text-[var(--brand-ink)]">Estado del día</p>
+              <span className="metric-pill metric-pill-neutral">Actual</span>
             </div>
             <div className="mt-5 space-y-4 text-sm leading-6 text-slate-600">
               <div className="rounded-[1.5rem] bg-white/55 p-4">

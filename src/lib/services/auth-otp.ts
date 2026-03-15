@@ -25,6 +25,8 @@ interface OtpValidationResult {
   };
 }
 
+const OTP_EXPIRATION_MINUTES = 10;
+
 export interface OtpRequestResult {
   ok: boolean;
   phone: string;
@@ -93,7 +95,7 @@ export async function requestOtpForPhone(phone: string): Promise<OtpRequestResul
   }
 
   const otp = generateOtpCode();
-  const expiresAt = addMinutes(new Date(), 5).toISOString();
+  const expiresAt = addMinutes(new Date(), OTP_EXPIRATION_MINUTES).toISOString();
 
   await setOtp({
     userId: user.id,
@@ -104,7 +106,7 @@ export async function requestOtpForPhone(phone: string): Promise<OtpRequestResul
   try {
     await sendWhatsAppOtpTemplateMessage(phone, otp, {
       negocioId: user.negocio_id,
-      expirationMinutes: 5,
+      expirationMinutes: OTP_EXPIRATION_MINUTES,
     });
     publishDomainEvent({ type: "otp.requested", payload: { phone } });
 
@@ -116,8 +118,8 @@ export async function requestOtpForPhone(phone: string): Promise<OtpRequestResul
       mode: flow,
       message:
         flow === "signup"
-          ? "Creamos tu cuenta inicial y enviamos el código por WhatsApp."
-          : "Enviamos el código por WhatsApp.",
+          ? "Creamos tu cuenta inicial y estamos enviando tu código por WhatsApp."
+          : "Estamos enviando tu código por WhatsApp.",
     };
   } catch (sendError) {
     return {

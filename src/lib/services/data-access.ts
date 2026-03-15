@@ -8,6 +8,7 @@ import type {
   ConversacionContexto,
   Negocio,
   NotificacionConfig,
+  Rol,
   TipoTransaccion,
   Usuario,
 } from "@/lib/domain/types";
@@ -625,6 +626,82 @@ export async function listTeamUsers(negocioId: string): Promise<Usuario[]> {
   }
 
   return (data as Usuario[]) ?? [];
+}
+
+export async function createTeamUser(input: {
+  negocioId: string;
+  telefono: string;
+  nombre: string;
+  puedeRegistrarCostos: boolean;
+}): Promise<Usuario> {
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from("usuarios")
+    .insert({
+      negocio_id: input.negocioId,
+      telefono: input.telefono,
+      nombre: input.nombre,
+      rol: "vendedor",
+      activo: true,
+      puede_registrar_costos: input.puedeRegistrarCostos,
+    })
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos")
+    .single();
+
+  if (error || !data) {
+    throw error ?? new Error("Failed creating team user");
+  }
+
+  return data as Usuario;
+}
+
+export async function updateTeamUser(input: {
+  negocioId: string;
+  userId: string;
+  activo?: boolean;
+  puedeRegistrarCostos?: boolean;
+}): Promise<void> {
+  const supabase = getAdminClient();
+
+  const { data: existing, error: existingError } = await supabase
+    .from("usuarios")
+    .select("id, rol")
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (!existing) {
+    throw new Error("Team user not found");
+  }
+
+  if ((existing as { rol: Rol }).rol !== "vendedor") {
+    throw new Error("Only seller records can be updated from this action");
+  }
+
+  const payload: Record<string, unknown> = {};
+
+  if (input.activo !== undefined) {
+    payload.activo = input.activo;
+  }
+
+  if (input.puedeRegistrarCostos !== undefined) {
+    payload.puede_registrar_costos = input.puedeRegistrarCostos;
+  }
+
+  const { error } = await supabase
+    .from("usuarios")
+    .update(payload)
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function listAllAlertas(negocioId: string): Promise<Alerta[]> {

@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import type { Rol } from "@/lib/domain/types";
 
 const SESSION_COOKIE = "cent_session";
-const SESSION_DURATION_SECONDS = 60 * 60 * 8;
+const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30;
 
 export interface SessionClaims extends JWTPayload {
   usuarioId: string;

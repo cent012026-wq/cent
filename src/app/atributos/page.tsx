@@ -8,7 +8,7 @@ export default async function AtributosPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Atributos" subtitle="Define qué datos debe capturar cent en cada venta o gasto.">
+      <AppShell title="Atributos" subtitle="Define los campos del negocio." telefono={session.telefono}>
         <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para administrar atributos dinámicos.
         </p>
@@ -20,8 +20,9 @@ export default async function AtributosPage() {
 
   return (
     <AppShell
-      title="Atributos dinámicos"
-      subtitle="Cada comercio puede definir su propia estructura: talla, color, método de pago, sede, categoría o cualquier dato que necesite controlar."
+      title="Atributos"
+      subtitle="Campos que cent debe capturar al registrar ventas o gastos."
+      telefono={session.telefono}
     >
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {attrs.map((attr) => (

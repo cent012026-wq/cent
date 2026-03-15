@@ -8,7 +8,7 @@ export default async function NotificacionesPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Notificaciones" subtitle="Configura resúmenes, avisos y tiempos de envío por WhatsApp.">
+      <AppShell title="Notificaciones" subtitle="Controla los envíos automáticos." telefono={session.telefono}>
         <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para administrar notificaciones.
         </p>
@@ -21,14 +21,15 @@ export default async function NotificacionesPage() {
   return (
     <AppShell
       title="Notificaciones"
-      subtitle="Activa reportes y avisos para que el dueño reciba señales útiles sin saturarse de mensajes innecesarios."
+      subtitle="Resúmenes, avisos y última ejecución por tipo."
+      telefono={session.telefono}
     >
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {configs.length === 0 ? (
           <article className="glass-panel rounded-[2.4rem] p-10 md:col-span-2 xl:col-span-3">
             <h2 className="text-2xl font-bold text-[var(--brand-ink)]">No hay notificaciones configuradas</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-              Cuando actives resúmenes diarios, semanales o avisos de operación, esta vista se convertirá en tu centro de control para el canal saliente.
+              Activa notificaciones cuando quieras enviar resúmenes o avisos desde WhatsApp.
             </p>
           </article>
         ) : (

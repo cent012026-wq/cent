@@ -8,7 +8,7 @@ export default async function ConfigBotPage() {
 
   if (!isSupabaseConfigured()) {
     return (
-      <AppShell title="Config Bot" subtitle="Ajusta el tono, nombre y contexto con el que opera el asistente del negocio.">
+      <AppShell title="Config bot" subtitle="Ajusta la identidad del asistente." telefono={session.telefono}>
         <p className="glass-panel rounded-[2rem] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-700">
           Configura Supabase para personalizar el bot.
         </p>
@@ -20,8 +20,9 @@ export default async function ConfigBotPage() {
 
   return (
     <AppShell
-      title="Configuración del bot"
-      subtitle="Una buena configuración hace que el agente suene como el negocio y capture la información con el nivel de detalle que realmente importa."
+      title="Config bot"
+      subtitle="Nombre, tono y lenguaje con el que responde el asistente."
+      telefono={session.telefono}
     >
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <article className="glass-panel-strong rounded-[2.6rem] p-6 md:p-8">
@@ -60,12 +61,12 @@ export default async function ConfigBotPage() {
         </article>
 
         <article className="glass-panel rounded-[2.6rem] p-6 md:p-8">
-          <div className="eyebrow">Guía de operación</div>
-          <h2 className="mt-5 text-3xl font-bold text-[var(--brand-ink)]">Qué debe sentirse en este panel</h2>
+          <div className="eyebrow">Resumen</div>
+          <h2 className="mt-5 text-3xl font-bold text-[var(--brand-ink)]">Estado actual del asistente</h2>
           <div className="mt-6 space-y-4 text-sm leading-7 text-slate-600">
-            <div className="rounded-[1.5rem] bg-white/55 p-4">El dueño debe entender cómo va a responder el agente sin leer prompts ni configuraciones técnicas.</div>
-            <div className="rounded-[1.5rem] bg-white/55 p-4">La información del negocio debe estar clara: tono, lenguaje y nombre del asistente.</div>
-            <div className="rounded-[1.5rem] bg-white/55 p-4">La vista debe sentirse como configuración útil, no como panel de ingeniería.</div>
+            <div className="rounded-[1.5rem] bg-white/55 p-4">El nombre del agente define cómo se presenta ante el equipo y el dueño.</div>
+            <div className="rounded-[1.5rem] bg-white/55 p-4">El tono controla si la respuesta se siente más formal, cercana o neutra.</div>
+            <div className="rounded-[1.5rem] bg-white/55 p-4">La jerga ayuda a mantener consistencia con el lenguaje del negocio.</div>
           </div>
         </article>
       </section>
