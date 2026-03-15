@@ -218,6 +218,17 @@ export function parseWebhookMessages(payload: unknown): WebhookMessage[] {
   }
 
   const objectPayload = payload as Record<string, unknown>;
+  const eventType =
+    (typeof objectPayload.event === "string" ? objectPayload.event : undefined) ??
+    (typeof objectPayload.type === "string" ? objectPayload.type : undefined);
+
+  if (
+    eventType &&
+    eventType !== "message.received" &&
+    eventType !== "whatsapp.message.received"
+  ) {
+    return [];
+  }
 
   if (Array.isArray((objectPayload as MetaWebhookPayload).entry)) {
     return parseMetaMessages(objectPayload as MetaWebhookPayload);

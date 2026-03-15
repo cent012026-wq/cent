@@ -149,4 +149,23 @@ describe("webhook parser", () => {
 
     expect(messages).toHaveLength(0);
   });
+
+  it("ignores kapso non-received events", () => {
+    const messages = parseWebhookMessages({
+      event: "whatsapp.message.sent",
+      data: [
+        {
+          id: "wamid.outbound.2",
+          from: "573005282031",
+          message_type: "text",
+          text: "hola",
+          kapso: {
+            direction: "outbound",
+          },
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(0);
+  });
 });
