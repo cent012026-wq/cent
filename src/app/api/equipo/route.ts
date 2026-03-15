@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { AuthError, requireOwnerSession } from "@/lib/auth/guards";
-import { createTeamUser } from "@/lib/services/data-access";
+import { inviteSellerByOtp } from "@/lib/services/team-invitations";
 import { normalizePhone } from "@/lib/utils/parsing";
 
 const createSchema = z.object({
@@ -21,14 +21,25 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const user = await createTeamUser({
+    const result = await inviteSellerByOtp({
       negocioId: session.negocioId,
       nombre: parsed.data.nombre,
       telefono: normalizePhone(parsed.data.telefono),
       puedeRegistrarCostos: parsed.data.puedeRegistrarCostos,
     });
 
-    return NextResponse.json({ ok: true, data: user }, { status: 201 });
+    return NextResponse.json(
+      {
+        ok: true,
+        data: result.user,
+        mode: result.mode,
+        message:
+          result.mode === "created"
+            ? "Enviamos un OTP al vendedor para confirmar el número."
+            : "Reenviamos el OTP al vendedor para confirmar el número.",
+      },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,6 +50,16 @@ export async function POST(request: Request): Promise<NextResponse> {
         { error: "Ese número ya está asociado a otra cuenta dentro de cent." },
         { status: 409 },
       );
+    }
+
+    if (error instanceof Error) {
+      if (error.message.includes("ya está asociado") || error.message.includes("ya pertenece") || error.message.includes("ya está verificado")) {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
+
+      if (error.message.startsWith("Failed to send WhatsApp OTP template:")) {
+        return NextResponse.json({ error: "No pudimos enviar el OTP al vendedor. Revisa la configuración de WhatsApp." }, { status: 502 });
+      }
     }
 
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

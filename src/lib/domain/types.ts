@@ -49,6 +49,9 @@ export interface Usuario {
   nombre: string | null;
   activo: boolean;
   puede_registrar_costos: boolean;
+  codigo_otp?: string | null;
+  otp_expira?: string | null;
+  otp_intentos?: number | null;
 }
 
 export interface Negocio {

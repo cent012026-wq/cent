@@ -45,7 +45,7 @@ export async function findUserByPhone(phone: string): Promise<Usuario | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("usuarios")
-    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos")
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, codigo_otp, otp_expira, otp_intentos")
     .eq("telefono", phone)
     .limit(1)
     .maybeSingle();
@@ -61,7 +61,7 @@ export async function findUserById(userId: string): Promise<Usuario | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("usuarios")
-    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos")
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, codigo_otp, otp_expira, otp_intentos")
     .eq("id", userId)
     .limit(1)
     .maybeSingle();
@@ -617,7 +617,7 @@ export async function listTeamUsers(negocioId: string): Promise<Usuario[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("usuarios")
-    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos")
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, otp_expira, otp_intentos")
     .eq("negocio_id", negocioId)
     .order("created_at", { ascending: false });
 
@@ -642,14 +642,81 @@ export async function createTeamUser(input: {
       telefono: input.telefono,
       nombre: input.nombre,
       rol: "vendedor",
-      activo: true,
+      activo: false,
       puede_registrar_costos: input.puedeRegistrarCostos,
     })
-    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos")
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, otp_expira, otp_intentos")
     .single();
 
   if (error || !data) {
     throw error ?? new Error("Failed creating team user");
+  }
+
+  return data as Usuario;
+}
+
+export async function findTeamUserById(input: {
+  negocioId: string;
+  userId: string;
+}): Promise<Usuario | null> {
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from("usuarios")
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, otp_expira, otp_intentos")
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as Usuario | null) ?? null;
+}
+
+export async function updateTeamUserProfile(input: {
+  negocioId: string;
+  userId: string;
+  nombre?: string;
+  activo?: boolean;
+  puedeRegistrarCostos?: boolean;
+  otpExpira?: string | null;
+  otpIntentos?: number;
+}): Promise<Usuario> {
+  const supabase = getAdminClient();
+  const payload: Record<string, unknown> = {};
+
+  if (input.nombre !== undefined) {
+    payload.nombre = input.nombre;
+  }
+
+  if (input.activo !== undefined) {
+    payload.activo = input.activo;
+  }
+
+  if (input.puedeRegistrarCostos !== undefined) {
+    payload.puede_registrar_costos = input.puedeRegistrarCostos;
+  }
+
+  if (input.otpExpira !== undefined) {
+    payload.otp_expira = input.otpExpira;
+  }
+
+  if (input.otpIntentos !== undefined) {
+    payload.otp_intentos = input.otpIntentos;
+  }
+
+  const { data, error } = await supabase
+    .from("usuarios")
+    .update(payload)
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId)
+    .select("id, telefono, negocio_id, rol, nombre, activo, puede_registrar_costos, otp_expira, otp_intentos")
+    .single();
+
+  if (error || !data) {
+    throw error ?? new Error("Failed updating team user");
   }
 
   return data as Usuario;
@@ -696,6 +763,43 @@ export async function updateTeamUser(input: {
   const { error } = await supabase
     .from("usuarios")
     .update(payload)
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteTeamUser(input: {
+  negocioId: string;
+  userId: string;
+}): Promise<void> {
+  const supabase = getAdminClient();
+
+  const { data: existing, error: existingError } = await supabase
+    .from("usuarios")
+    .select("id, rol")
+    .eq("id", input.userId)
+    .eq("negocio_id", input.negocioId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (!existing) {
+    throw new Error("Team user not found");
+  }
+
+  if ((existing as { rol: Rol }).rol !== "vendedor") {
+    throw new Error("Only seller records can be deleted from this action");
+  }
+
+  const { error } = await supabase
+    .from("usuarios")
+    .delete()
     .eq("id", input.userId)
     .eq("negocio_id", input.negocioId);
 
