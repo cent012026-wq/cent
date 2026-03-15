@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -37,7 +37,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const payload = JSON.parse(rawBody) as unknown;
 
-  queueMicrotask(() => {
+  after(() => {
     processIncomingWhatsAppPayload(payload).catch((error) => {
       logger.error("Async processing of webhook failed", {
         error: error instanceof Error ? error.message : "unknown_error",

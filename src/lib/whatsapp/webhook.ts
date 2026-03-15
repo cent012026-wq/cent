@@ -91,11 +91,47 @@ function readTextCandidate(data: Record<string, unknown>, message: Record<string
   return undefined;
 }
 
+function readTranscriptCandidate(data: Record<string, unknown>, message: Record<string, unknown>): string | undefined {
+  const directTranscript = data.transcript;
+  if (typeof directTranscript === "string") {
+    return directTranscript.trim();
+  }
+
+  if (
+    directTranscript &&
+    typeof directTranscript === "object" &&
+    typeof (directTranscript as { text?: unknown }).text === "string"
+  ) {
+    return ((directTranscript as { text: string }).text ?? "").trim();
+  }
+
+  const kapsoTranscript = (data.kapso as { transcript?: unknown } | undefined)?.transcript;
+  if (typeof kapsoTranscript === "string") {
+    return kapsoTranscript.trim();
+  }
+
+  if (
+    kapsoTranscript &&
+    typeof kapsoTranscript === "object" &&
+    typeof (kapsoTranscript as { text?: unknown }).text === "string"
+  ) {
+    return ((kapsoTranscript as { text: string }).text ?? "").trim();
+  }
+
+  const messageTranscript = (message.transcript as string | undefined) ?? undefined;
+  if (messageTranscript) {
+    return messageTranscript.trim();
+  }
+
+  return undefined;
+}
+
 function parseKapsoData(data: Record<string, unknown>): WebhookMessage[] {
   const sharedFrom =
     (data.from as string | undefined) ??
     ((data.contact as { wa_id?: string } | undefined)?.wa_id ?? undefined) ??
-    ((data.sender as { wa_id?: string } | undefined)?.wa_id ?? undefined);
+    ((data.sender as { wa_id?: string } | undefined)?.wa_id ?? undefined) ??
+    ((data.conversation as { phone_number?: string } | undefined)?.phone_number ?? undefined);
 
   const candidateMessages = Array.isArray(data.messages)
     ? (data.messages as Array<Record<string, unknown>>)
@@ -129,16 +165,24 @@ function parseKapsoData(data: Record<string, unknown>): WebhookMessage[] {
     const mediaId =
       ((candidate.audio as { id?: string } | undefined)?.id ??
         (candidate.image as { id?: string } | undefined)?.id ??
+        ((data.audio as { id?: string } | undefined)?.id ??
+          (data.image as { id?: string } | undefined)?.id) ??
         (data.media_id as string | undefined) ??
         ((data.kapso as { media_id?: string } | undefined)?.media_id ?? undefined));
 
     const mediaUrl =
-      (data.media_url as string | undefined) ??
-      ((data.kapso as { media_url?: string } | undefined)?.media_url ?? undefined);
+      ((candidate.audio as { url?: string; link?: string } | undefined)?.url ??
+        (candidate.audio as { url?: string; link?: string } | undefined)?.link ??
+        (candidate.image as { url?: string; link?: string } | undefined)?.url ??
+        (candidate.image as { url?: string; link?: string } | undefined)?.link ??
+        (data.audio as { url?: string; link?: string } | undefined)?.url ??
+        (data.audio as { url?: string; link?: string } | undefined)?.link ??
+        (data.image as { url?: string; link?: string } | undefined)?.url ??
+        (data.image as { url?: string; link?: string } | undefined)?.link ??
+        (data.media_url as string | undefined) ??
+        ((data.kapso as { media_url?: string } | undefined)?.media_url ?? undefined));
 
-    const transcript =
-      (data.transcript as string | undefined) ??
-      ((data.kapso as { transcript?: string } | undefined)?.transcript ?? undefined);
+    const transcript = readTranscriptCandidate(data, candidate);
 
     const text = readTextCandidate(data, candidate);
 

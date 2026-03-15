@@ -1,5 +1,10 @@
 export function normalizePhone(phone: string): string {
-  return phone.replace(/[^\d+]/g, "").replace(/^00/, "+");
+  const normalized = phone.replace(/[^\d+]/g, "").replace(/^00/, "+");
+  if (!normalized) {
+    return normalized;
+  }
+
+  return normalized.startsWith("+") ? normalized : `+${normalized}`;
 }
 
 export function parseMonto(raw: string): number | undefined {

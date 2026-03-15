@@ -31,7 +31,7 @@ describe("webhook parser", () => {
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({
       messageId: "wamid.meta.1",
-      from: "573001234567",
+      from: "+573001234567",
       type: "text",
       text: "Vendí 2 camisas",
     });
@@ -58,7 +58,7 @@ describe("webhook parser", () => {
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({
       messageId: "wamid.kapso.1",
-      from: "573009998887",
+      from: "+573009998887",
       type: "audio",
       mediaUrl: "https://cdn.kapso.ai/file.ogg",
       transcript: "Vendí 3 camisas a 25 mil",
@@ -90,9 +90,45 @@ describe("webhook parser", () => {
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({
       messageId: "wamid.kapso.batch.1",
-      from: "573007750712",
+      from: "+573007750712",
       type: "text",
       text: "Vendí 2 cafés a 12000",
+    });
+  });
+
+  it("parses kapso audio payload with nested transcript object", () => {
+    const messages = parseWebhookMessages({
+      type: "whatsapp.message.received",
+      batch: true,
+      data: [
+        {
+          from: "573005282031",
+          audio: {
+            id: "2148534835903045",
+            url: "https://app.kapso.ai/audio.ogg",
+          },
+          kapso: {
+            transcript: {
+              text: "Vendí tres jeans por ciento cincuenta.",
+            },
+          },
+          message: {
+            id: "wamid.audio.1",
+            type: "audio",
+          },
+          timestamp: "1773557957",
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatchObject({
+      messageId: "wamid.audio.1",
+      from: "+573005282031",
+      type: "audio",
+      mediaId: "2148534835903045",
+      mediaUrl: "https://app.kapso.ai/audio.ogg",
+      transcript: "Vendí tres jeans por ciento cincuenta.",
     });
   });
 });
