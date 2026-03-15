@@ -1,0 +1,67 @@
+import { describe, expect, it } from "vitest";
+
+import { parseWebhookMessages } from "@/lib/whatsapp/webhook";
+
+describe("webhook parser", () => {
+  it("parses meta webhook payload", () => {
+    const messages = parseWebhookMessages({
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                messages: [
+                  {
+                    id: "wamid.meta.1",
+                    from: "573001234567",
+                    timestamp: "1718224617",
+                    type: "text",
+                    text: {
+                      body: "Vendí 2 camisas",
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatchObject({
+      messageId: "wamid.meta.1",
+      from: "573001234567",
+      type: "text",
+      text: "Vendí 2 camisas",
+    });
+  });
+
+  it("parses kapso v2 envelope payload", () => {
+    const messages = parseWebhookMessages({
+      event: "message.received",
+      data: {
+        id: "evt_123",
+        from: "573009998887",
+        message_type: "audio",
+        message: {
+          id: "wamid.kapso.1",
+          type: "audio",
+        },
+        kapso: {
+          media_url: "https://cdn.kapso.ai/file.ogg",
+          transcript: "Vendí 3 camisas a 25 mil",
+        },
+      },
+    });
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatchObject({
+      messageId: "wamid.kapso.1",
+      from: "573009998887",
+      type: "audio",
+      mediaUrl: "https://cdn.kapso.ai/file.ogg",
+      transcript: "Vendí 3 camisas a 25 mil",
+    });
+  });
+});

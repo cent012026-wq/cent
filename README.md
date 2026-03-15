@@ -1,36 +1,205 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# cent V1
 
-## Getting Started
+SaaS de gestión de ventas y gastos por WhatsApp con panel web administrativo.
 
-First, run the development server:
+Stack actual del proyecto:
+
+- Next.js (App Router)
+- Supabase (PostgreSQL + RLS)
+- OpenAI (intents, extracción y STT)
+- WhatsApp via Kapso (por defecto)
+
+## 1. Prerrequisitos
+
+Instala y verifica:
+
+1. Node.js 20+
+2. npm 10+
+3. Cuenta de Supabase
+4. Cuenta de Kapso con número de WhatsApp activo
+5. Clave de OpenAI
+
+Verificación rápida:
+
+```bash
+node -v
+npm -v
+```
+
+## 2. Clonar e instalar
+
+```bash
+git clone <tu-repo>
+cd cent
+npm install
+```
+
+## 3. Variables de entorno
+
+Copia plantilla:
+
+```bash
+cp .env.example .env.local
+```
+
+Variables mínimas para levantar el sistema completo:
+
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_JWT_SECRET`
+- `OPENAI_API_KEY`
+- `WHATSAPP_PROVIDER=kapso`
+- `WHATSAPP_PHONE_NUMBER_ID`
+- `KAPSO_API_KEY`
+- `KAPSO_WEBHOOK_SECRET`
+- `KAPSO_BASE_URL` (por defecto `https://api.kapso.ai`)
+- `WHATSAPP_API_VERSION` (por defecto `v24.0`)
+- `CRON_SECRET`
+
+Variables opcionales:
+
+- `SENTRY_DSN`
+- `OPENAI_MODEL_ROUTER`
+- `OPENAI_MODEL_EXTRACTOR`
+- `OPENAI_MODEL_SQL`
+- `OPENAI_MODEL_CHAT`
+
+Notas importantes:
+
+- Si `WHATSAPP_PROVIDER=kapso`, el backend valida firma con header `x-webhook-signature` y `KAPSO_WEBHOOK_SECRET`.
+- Si quieres operar directo con Meta, cambia a `WHATSAPP_PROVIDER=meta` y completa `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`.
+
+## 4. Base de datos (Supabase)
+
+Aplica la migración principal:
+
+- Archivo: `supabase/migrations/20260304000100_init_cent.sql`
+
+Opciones para aplicarla:
+
+1. SQL Editor (Supabase Dashboard): pega el archivo completo y ejecuta.
+2. Supabase CLI: aplica la migración en tu proyecto enlazado.
+
+La migración crea:
+
+- Tablas de dominio: `negocios`, `usuarios`, `atributos_negocio`, `transacciones`, `alertas`, `conversaciones_contexto`, `notificaciones_config`
+- Auditoría: `inbound_messages`, `outbound_messages`
+- Políticas RLS multi-tenant por `negocio_id`
+- Restricciones por rol (`dueno` vs `vendedor`)
+
+## 5. Configurar webhook en Kapso
+
+Configura en Kapso el webhook entrante apuntando a:
+
+- `POST https://<tu-dominio>/api/webhook/whatsapp`
+
+Para local:
+
+1. Ejecuta la app local (`npm run dev`)
+2. Expón el puerto 3000 con ngrok/cloudflared
+3. Usa la URL pública en Kapso
+
+El endpoint `GET /api/webhook/whatsapp` en modo Kapso responde salud (`{ ok: true, provider: "kapso" }`).
+
+## 6. Ejecutar proyecto
+
+Modo desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build producción:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 7. Validación técnica
 
-## Learn More
+Ejecuta checks:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run typecheck
+npm run test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 8. Flujo funcional esperado (end-to-end)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Número nuevo escribe al bot.
+2. Bot solicita audio de onboarding.
+3. Audio -> transcripción -> creación de `negocio` + `dueno` + atributos iniciales.
+4. Dueño solicita OTP en web (`/login`).
+5. OTP llega por WhatsApp y abre sesión.
+6. Mensajes operativos (`venta`, `costo`, `métricas`) se procesan por webhook.
+7. Transacciones disparan evaluación de alertas y notificaciones.
 
-## Deploy on Vercel
+## 9. Prueba manual del webhook (sin Kapso)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Puedes simular un mensaje con cURL:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+curl -X POST http://localhost:3000/api/webhook/whatsapp \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-signature: sha256=<firma>" \
+  -d '{
+    "event": "message.received",
+    "data": {
+      "id": "evt_test_1",
+      "from": "573001234567",
+      "message_type": "text",
+      "message": {
+        "id": "wamid.test.1",
+        "type": "text",
+        "text": { "body": "Vendí 2 camisas a 25 mil" }
+      }
+    }
+  }'
+```
+
+Si no quieres validar firma para pruebas locales inmediatas, deja `KAPSO_WEBHOOK_SECRET` vacío temporalmente.
+
+## 10. Endpoints principales
+
+- `GET /api/health`
+- `GET /api/webhook/whatsapp`
+- `POST /api/webhook/whatsapp`
+- `POST /api/auth/request-otp`
+- `POST /api/auth/verify-otp`
+- `GET /api/dashboard/summary`
+- `GET /api/transacciones`
+- `POST /api/transacciones`
+- `POST /api/alertas`
+- `PATCH /api/alertas/:id`
+- `POST /api/notificaciones/config`
+- `PATCH /api/notificaciones/config/:id`
+- `POST /api/cron/notifications`
+
+## 11. Estructura del código
+
+- `src/app/api/*`: API routes
+- `src/lib/ai/*`: router IA, schemas y provider OpenAI
+- `src/lib/services/*`: lógica de negocio
+- `src/lib/whatsapp/*`: adaptación de proveedor (Kapso/Meta)
+- `supabase/migrations/*`: SQL y RLS
+
+## 12. Troubleshooting rápido
+
+1. No salen mensajes de WhatsApp.
+   - Revisa `KAPSO_API_KEY`, `WHATSAPP_PHONE_NUMBER_ID` y `WHATSAPP_API_VERSION`.
+
+2. Webhook responde 401.
+   - Revisa firma y `KAPSO_WEBHOOK_SECRET`.
+
+3. Login OTP no llega.
+   - Verifica que el usuario dueño exista en `usuarios` y tenga `activo=true`.
+
+4. Error de permisos de datos.
+   - Confirma migración aplicada completa y políticas RLS activas.
+
+5. Sin respuesta de IA.
+   - Verifica `OPENAI_API_KEY`; sin clave usa fallback heurístico limitado.
