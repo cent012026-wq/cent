@@ -52,8 +52,8 @@ async function transcribeAudioIfNeeded(message: WebhookMessage): Promise<string>
     return message.text ?? "";
   }
 
-  if (!env.OPENAI_API_KEY) {
-    return "audio_transcrito_no_disponible";
+  if (!env.STT_API_KEY && !env.OPENAI_API_KEY) {
+    return "";
   }
 
   const provider = new OpenAIProvider();
@@ -93,15 +93,18 @@ async function handleUnknownUser(message: WebhookMessage): Promise<void> {
       return "";
     }
 
-    if (!env.OPENAI_API_KEY) {
-      return "Negocio de ropa, vendo camisas y pantalones, me importa talla y color";
+    if (!env.STT_API_KEY && !env.OPENAI_API_KEY) {
+      return "";
     }
 
     return new OpenAIProvider().transcribeAudio(buffer);
   })();
 
   if (!transcript) {
-    await replyTo(message.from, "No pude transcribir tu audio. Reenvíalo por favor.");
+    await replyTo(
+      message.from,
+      "No pude transcribir tu audio. Reenvíalo o escríbeme la descripción del negocio en texto.",
+    );
     return;
   }
 

@@ -6,7 +6,7 @@ Stack actual del proyecto:
 
 - Next.js (App Router)
 - Supabase (PostgreSQL + RLS)
-- OpenAI (intents, extracción y STT)
+- OpenRouter para LLM (`z-ai/glm-5`) + OpenAI Whisper para audio a texto
 - WhatsApp via Kapso (por defecto)
 
 ## 1. Prerrequisitos
@@ -17,7 +17,8 @@ Instala y verifica:
 2. npm 10+
 3. Cuenta de Supabase
 4. Cuenta de Kapso con número de WhatsApp activo
-5. Clave de OpenAI
+5. Clave de OpenRouter para LLM
+6. Clave de OpenAI para Whisper
 
 Verificación rápida:
 
@@ -50,6 +51,7 @@ Variables mínimas para levantar el sistema completo:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_JWT_SECRET`
 - `OPENAI_API_KEY`
+- `OPENAI_BASE_URL`
 - `WHATSAPP_PROVIDER=kapso`
 - `WHATSAPP_PHONE_NUMBER_ID`
 - `KAPSO_API_KEY`
@@ -61,14 +63,24 @@ Variables mínimas para levantar el sistema completo:
 Variables opcionales:
 
 - `SENTRY_DSN`
+- `OPENAI_SITE_URL`
+- `OPENAI_APP_NAME`
 - `OPENAI_MODEL_ROUTER`
 - `OPENAI_MODEL_EXTRACTOR`
 - `OPENAI_MODEL_SQL`
 - `OPENAI_MODEL_CHAT`
+- `STT_API_KEY`
+- `STT_BASE_URL`
+- `STT_MODEL`
+- `STT_AUDIO_FORMAT`
 
 Notas importantes:
 
 - Si `WHATSAPP_PROVIDER=kapso`, el backend valida firma con header `x-webhook-signature` y `KAPSO_WEBHOOK_SECRET`.
+- Para OpenRouter, usa `OPENAI_BASE_URL=https://openrouter.ai/api/v1`.
+- El setup actual de audio usa `STT_BASE_URL=https://api.openai.com/v1` y `STT_MODEL=whisper-1`.
+- Para notas de voz de WhatsApp, deja `STT_AUDIO_FORMAT=ogg`.
+- Como las notas de voz de WhatsApp suelen venir en `ogg/opus`, el backend las convierte a `wav` antes de enviarlas a Whisper.
 - Si quieres operar directo con Meta, cambia a `WHATSAPP_PROVIDER=meta` y completa `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`.
 
 ## 4. Base de datos (Supabase)
@@ -202,4 +214,7 @@ Si no quieres validar firma para pruebas locales inmediatas, deja `KAPSO_WEBHOOK
    - Confirma migración aplicada completa y políticas RLS activas.
 
 5. Sin respuesta de IA.
-   - Verifica `OPENAI_API_KEY`; sin clave usa fallback heurístico limitado.
+   - Verifica `OPENAI_API_KEY` y `OPENAI_BASE_URL`; sin clave usa fallback heurístico limitado.
+
+6. Los audios no se procesan.
+   - Si Kapso no manda `transcript`, verifica `STT_API_KEY`, `STT_MODEL=whisper-1` y que el deploy incluya `ffmpeg-static`.
